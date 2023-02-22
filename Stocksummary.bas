@@ -1,5 +1,5 @@
 Attribute VB_Name = "Module1"
-Sub StockSummary()
+Sub SummarizationofStock()
     ' Grab each sheet in the book
     For Each sht In Worksheets
         ' Create a headings array
@@ -7,10 +7,10 @@ Sub StockSummary()
         Headings = Array("Ticker", "Yearly Change", "Percent Change", "Total Stock Volume")
         HeadingsLength = (UBound(Headings) - LBound(Headings) + 1)
         
-        'Get the initial columns' length
+        'Get the length of the initial columns
         rowLength = sht.Range("A1", sht.Range("A1").End(xlToRight)).Columns.Count
         
-        ' Iterate through the heads array to apply it to produce the four headers.
+        ' Apply headings array to create the 4 headings by iterating through Headings array
         Dim HeadingsIndex As Integer
         HeadingsIndex = 0
         For r = (rowLength + 2) To (HeadingsLength + rowLength + 1)
@@ -24,7 +24,7 @@ Sub StockSummary()
         
         
         Dim TickerName As String
-                
+        
         ' Set initial total value for each ticker
         TotalVol = 0
         
@@ -37,11 +37,11 @@ Sub StockSummary()
         ' Code block to iterate through each row
         For i = 2 To ColLength
         
-            ' If the value of the subsequent row differs from that of the preceding row
+            ' If the next row's value is not the same as the current row's
             If sht.Cells(i + 1, 1).Value <> sht.Cells(i, 1).Value Then
                 TickerName = sht.Cells(i, 1).Value
                 
-                ' The closing value of the ticker's year must be entered before each loop begins.
+                ' Before each loop starts, the closing value of the ticker's year needs to be assigned
                 YearEnd = sht.Cells(i, 6).Value
                 
                 TotalVol = TotalVol + sht.Cells(i, 7).Value
@@ -57,7 +57,7 @@ Sub StockSummary()
                 End If
                 
                 
-                'At the conclusion of the repetition, the row must be increased.
+                ' Need to increase the row at the end of the iteration
                 WorkingRow = WorkingRow + 1
                 
                 ' Need to reset the value of the next ticker's open value of the year
@@ -71,9 +71,44 @@ Sub StockSummary()
             End If
                 
         Next i
-
         
-        ' Autofit contents for all columns.
+        ' Set the new Headings Manually
+        sht.Range("O2").Value = "Greatest % increase"
+        sht.Range("O3").Value = "Greatest % decrease"
+        sht.Range("O4").Value = "Greatest Volume increase"
+        sht.Range("P1").Value = "Ticker"
+        sht.Range("Q1").Value = "Value"
+        
+        
+        'Dim NewColLength As Integer
+        
+        NewColLength = sht.Range("I1", sht.Range("I1").End(xlDown)).Rows.Count
+        
+        MaxPercIncrease = (WorksheetFunction.Max(sht.Range("K2:K" & NewColLength)))
+        MaxPercDecrease = (WorksheetFunction.Min(sht.Range("K2:K" & NewColLength)))
+        MaxVolume = (WorksheetFunction.Max(sht.Range("L2:L" & NewColLength)))
+        
+        
+        sht.Range("Q2").Value = MaxPercIncrease * 100 & "%"
+        sht.Range("Q3").Value = MaxPercDecrease * 100 & "%"
+        sht.Range("Q4").Value = MaxVolume
+        
+        ' Iterate through the combined results and insert values into fields
+        For j = 2 To NewColLength
+            If sht.Cells(j, 11).Value = MaxPercIncrease Then
+                sht.Range("P2").Value = sht.Cells(j, 11).Offset(0, -2)
+            End If
+            If sht.Cells(j, 11).Value = MaxPercDecrease Then
+                sht.Range("P3").Value = sht.Cells(j, 11).Offset(0, -2)
+            End If
+            If sht.Cells(j, 12).Value = MaxVolume Then
+                sht.Range("P4").Value = sht.Cells(j, 12).Offset(0, -3)
+            End If
+        
+        Next j
+        
+        
+        ' Adjust all columns to autofit contents
         sht.Range("I:Q").Columns.AutoFit
         
     Next sht
